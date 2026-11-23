@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark" />
     <meta name="description" content="A link index of amateur radio instruction and service manuals, from Visually Inconvenienced Hams. Links only — every manual opens on the maker's own site or in a public archive." />
     <link rel="icon" href="data:," />
-    <script>try{var t=localStorage.getItem("manuals-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}}catch(e){}</script>
+    <script>try{var t=localStorage.getItem("manuals-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}var s=parseInt(localStorage.getItem("manuals-text-size"),10);if(s>=16&&s<=40&&s%4===0){document.documentElement.style.fontSize=s+"px";}}catch(e){}</script>
     <title>Amateur Radio Manuals — Visually Inconvenienced Hams</title>
     <style>
       :root {
@@ -87,7 +87,7 @@
         --line: #888888;
       }
       * { box-sizing: border-box; }
-      html { font-size: 20px; }
+      html { font-size: 1.25rem; }
       body {
         margin: 0;
         background: var(--bg);
@@ -208,6 +208,21 @@
         cursor: pointer;
       }
       button.secondary:hover { background: var(--panel-hover); }
+      button.secondary:disabled { opacity: 0.55; cursor: default; }
+      .text-size-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+      button.secondary.text-size-btn { width: auto; flex: 1 1 9rem; margin: 0; }
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        border: 0;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        overflow: hidden;
+        white-space: nowrap;
+      }
       .status { font-size: 1.2rem; font-weight: bold; min-height: 1.8em; margin: 0.5rem 0; }
     </style>
   </head>
@@ -218,6 +233,13 @@
 
       <h1>Amateur Radio Manuals</h1>
       <p><button type="button" class="secondary" id="theme-toggle">Switch to light mode</button></p>
+      <div class="text-size-row" role="group" aria-label="Text size">
+        <button type="button" class="secondary text-size-btn" id="text-size-smaller">Smaller text</button>
+        <button type="button" class="secondary text-size-btn" id="text-size-larger">Larger text</button>
+        <button type="button" class="secondary text-size-btn" id="text-size-reset">Reset text size</button>
+      </div>
+      <p class="small">Your text size choice is stored on your own device only and is never sent anywhere.</p>
+      <p class="visually-hidden" id="text-size-status" aria-live="polite"></p>
       <p>An index of instruction and service manuals for amateur radio gear, from Visually Inconvenienced Hams. First edition — 15 November 2026.</p>
       <p>This page is a list of links only. Every link opens the manual on the maker's own website or in a public archive. Nothing is stored on this page, so you always get the newest version the maker offers.</p>
 
@@ -549,6 +571,102 @@
         }
       });
     }
+  }
+
+  /* ---- Text size ------------------------------------------------------- */
+  /* Text size moves in 4px steps from 16px to 40px, default 20px. The
+   * choice is remembered on this device only (localStorage key
+   * "manuals-text-size"); Reset returns to 20px and clears the stored
+   * choice. Each change is announced to screen readers through the
+   * aria-live status line, and the Smaller / Larger buttons are disabled
+   * at the limits so screen readers report them as unavailable. */
+  var TEXT_SIZE_MIN = 16;
+  var TEXT_SIZE_MAX = 40;
+  var TEXT_SIZE_STEP = 4;
+  var TEXT_SIZE_DEFAULT = 20;
+
+  function storedTextSize() {
+    try {
+      if (typeof localStorage !== "undefined") {
+        var s = parseInt(localStorage.getItem("manuals-text-size"), 10);
+        if (s >= TEXT_SIZE_MIN && s <= TEXT_SIZE_MAX && s % TEXT_SIZE_STEP === 0) return s;
+      }
+    } catch (e) { /* private mode: no stored choice */ }
+    return null;
+  }
+
+  function currentTextSize() {
+    var stored = storedTextSize();
+    if (stored !== null) return stored;
+    if (typeof document !== "undefined" && document.documentElement) {
+      var inline = parseInt(document.documentElement.style.fontSize, 10);
+      if (inline >= TEXT_SIZE_MIN && inline <= TEXT_SIZE_MAX) return inline;
+    }
+    return TEXT_SIZE_DEFAULT;
+  }
+
+  function applyTextSize(size, remember, announce) {
+    if (typeof document !== "undefined" && document.documentElement) {
+      document.documentElement.style.fontSize = size + "px";
+    }
+    var smallerBtn = document.getElementById("text-size-smaller");
+    var largerBtn = document.getElementById("text-size-larger");
+    if (smallerBtn) smallerBtn.disabled = size <= TEXT_SIZE_MIN;
+    if (largerBtn) largerBtn.disabled = size >= TEXT_SIZE_MAX;
+    if (remember) {
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("manuals-text-size", String(size));
+        }
+      } catch (e) { /* private mode: the choice just is not remembered */ }
+    }
+    if (announce) {
+      var status = document.getElementById("text-size-status");
+      if (status) status.textContent = "Text size " + size + " pixels";
+    }
+  }
+
+  function resetTextSize() {
+    try {
+      if (typeof localStorage !== "undefined") {
+        localStorage.removeItem("manuals-text-size");
+      }
+    } catch (e) { /* private mode: nothing stored to clear */ }
+    applyTextSize(TEXT_SIZE_DEFAULT, false, true);
+    /* Back to the stylesheet default, so the page follows the browser's
+     * own text size again instead of a fixed 20px. */
+    if (typeof document !== "undefined" && document.documentElement) {
+      document.documentElement.style.fontSize = "";
+    }
+  }
+
+  var smallerBtn = $("text-size-smaller");
+  var largerBtn = $("text-size-larger");
+  var resetBtn = $("text-size-reset");
+  if (smallerBtn) {
+    smallerBtn.addEventListener("click", function () {
+      var next = currentTextSize() - TEXT_SIZE_STEP;
+      if (next < TEXT_SIZE_MIN) next = TEXT_SIZE_MIN;
+      applyTextSize(next, true, true);
+    });
+  }
+  if (largerBtn) {
+    largerBtn.addEventListener("click", function () {
+      var next = currentTextSize() + TEXT_SIZE_STEP;
+      if (next > TEXT_SIZE_MAX) next = TEXT_SIZE_MAX;
+      applyTextSize(next, true, true);
+    });
+  }
+  if (resetBtn) resetBtn.addEventListener("click", resetTextSize);
+  /* Set the button states for the size in use. A stored size was already
+   * applied before first paint by the head script; with no stored choice
+   * the stylesheet default stays in place and neither button is disabled. */
+  var initialSize = storedTextSize();
+  if (initialSize !== null) {
+    applyTextSize(initialSize, false, false);
+  } else {
+    if (smallerBtn) smallerBtn.disabled = false;
+    if (largerBtn) largerBtn.disabled = false;
   }
 
   /* ---- Load the manual list (same site, no outside service) ------------ */
