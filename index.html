@@ -6,6 +6,7 @@
     <meta name="color-scheme" content="dark" />
     <meta name="description" content="A link index of amateur radio instruction and service manuals, from Visually Inconvenienced Hams. Links only — every manual opens on the maker's own site or in a public archive." />
     <link rel="icon" href="data:," />
+    <script>try{var t=localStorage.getItem("manuals-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}}catch(e){}</script>
     <title>Amateur Radio Manuals — Visually Inconvenienced Hams</title>
     <style>
       :root {
@@ -18,6 +19,72 @@
         --panel: #0d0d0d;
         --border: #ffffff;
         --muted: #cccccc;
+        --on-focus: #000000;
+        --on-good: #000000;
+        --on-fair: #000000;
+        --input-bg: #111111;
+        --panel-hover: #1f1f1f;
+        --good-hover: #66ff66;
+        --line: #444444;
+      }
+      /* Light mode follows the device setting, unless the toggle has set
+       * a choice. The bright-on-black palette stays the default. */
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #ffffff;
+          --text: #000000;
+          --good: #007a00;
+          --fair: #7a5200;
+          --poor: #b00000;
+          --focus: #005fcc;
+          --panel: #f5f5f5;
+          --border: #000000;
+          --muted: #555555;
+          --on-focus: #ffffff;
+          --on-good: #ffffff;
+          --on-fair: #ffffff;
+          --input-bg: #ffffff;
+          --panel-hover: #e0e0e0;
+          --good-hover: #005a00;
+          --line: #888888;
+        }
+      }
+      /* A choice from the toggle beats the device setting either way. */
+      :root[data-theme="dark"] {
+        --bg: #000000;
+        --text: #ffffff;
+        --good: #00ff00;
+        --fair: #ffb300;
+        --poor: #ff6666;
+        --focus: #ffff00;
+        --panel: #0d0d0d;
+        --border: #ffffff;
+        --muted: #cccccc;
+        --on-focus: #000000;
+        --on-good: #000000;
+        --on-fair: #000000;
+        --input-bg: #111111;
+        --panel-hover: #1f1f1f;
+        --good-hover: #66ff66;
+        --line: #444444;
+      }
+      :root[data-theme="light"] {
+        --bg: #ffffff;
+        --text: #000000;
+        --good: #007a00;
+        --fair: #7a5200;
+        --poor: #b00000;
+        --focus: #005fcc;
+        --panel: #f5f5f5;
+        --border: #000000;
+        --muted: #555555;
+        --on-focus: #ffffff;
+        --on-good: #ffffff;
+        --on-fair: #ffffff;
+        --input-bg: #ffffff;
+        --panel-hover: #e0e0e0;
+        --good-hover: #005a00;
+        --line: #888888;
       }
       * { box-sizing: border-box; }
       html { font-size: 20px; }
@@ -28,6 +95,9 @@
         font-family: Verdana, Geneva, "Segoe UI", Tahoma, sans-serif;
         line-height: 1.5;
         padding: 1rem;
+        /* Long words (like "Inconvenienced") must be allowed to break at
+         * narrow widths with enlarged text, or the page scrolls sideways. */
+        overflow-wrap: break-word;
       }
       .wrap { max-width: 46rem; margin: 0 auto; }
 
@@ -36,7 +106,7 @@
         left: -9999px;
         top: 0;
         background: var(--focus);
-        color: #000;
+        color: var(--on-focus);
         font-weight: bold;
         padding: 0.75rem 1rem;
         z-index: 10;
@@ -67,7 +137,7 @@
         margin: 1rem 0 0.5rem;
         min-height: 3.5rem;
       }
-      .back-link:hover { background: #1f1f1f; }
+      .back-link:hover { background: var(--panel-hover); }
       button.back-link {
         font: inherit;
         cursor: pointer;
@@ -98,7 +168,7 @@
       }
 
       .manual-list { list-style: none; margin: 0.5rem 0; padding: 0; font-size: 1.1rem; }
-      .manual-list li { padding: 0.6rem 0; border-bottom: 1px solid #444; }
+      .manual-list li { padding: 0.6rem 0; border-bottom: 1px solid var(--line); }
       .manual-list li:last-child { border-bottom: none; }
       .manual-list .label { display: block; margin-top: 0.2rem; font-size: 1rem; }
 
@@ -119,7 +189,7 @@
         font: inherit;
         font-size: 1.4rem;
         color: var(--text);
-        background: #111111;
+        background: var(--input-bg);
         border: 3px solid var(--border);
         margin: 0.25rem 0 0.75rem;
       }
@@ -137,7 +207,7 @@
         border: 3px solid var(--fair);
         cursor: pointer;
       }
-      button.secondary:hover { background: #1f1f1f; }
+      button.secondary:hover { background: var(--panel-hover); }
       .status { font-size: 1.2rem; font-weight: bold; min-height: 1.8em; margin: 0.5rem 0; }
     </style>
   </head>
@@ -147,6 +217,7 @@
       <a class="back-link" href="https://m.facebook.com/groups/742838019382868">Back to Visually Inconvenienced Hams on Facebook</a>
 
       <h1>Amateur Radio Manuals</h1>
+      <p><button type="button" class="secondary" id="theme-toggle">Switch to light mode</button></p>
       <p>An index of instruction and service manuals for amateur radio gear, from Visually Inconvenienced Hams. First edition — 15 November 2026.</p>
       <p>This page is a list of links only. Every link opens the manual on the maker's own website or in a public archive. Nothing is stored on this page, so you always get the newest version the maker offers.</p>
 
@@ -296,6 +367,7 @@
         <p>This page links to manuals. It does not store them. The manuals belong to the companies that made them, or to the archives that scanned them. We do not copy or host the manuals here. Linking keeps you on the newest version the maker offers.</p>
         <p>We check every link on this page before it is added. We also check all the links once a week. If a maker takes a manual down, we point to an archive copy instead when one exists.</p>
         <p>Some makers keep old manuals online after they stop selling the radio. Others do not. That is why the archive sections matter. They hold the manuals the makers no longer offer.</p>
+        <p>The page follows your device's light or dark setting, and the button at the top lets you pick either way. That choice is stored on your own device only and is never sent anywhere.</p>
         <p class="small">First edition — 15 November 2026. Every link on this page was checked on 15 November 2026. Links are re-checked weekly.</p>
       </main>
 
@@ -414,6 +486,70 @@
     showBrowse();
     searchInput.focus();
   });
+
+  /* ---- Light and dark mode ------------------------------------------- */
+  /* The page defaults to the bright-on-black palette. A device set to
+   * light mode gets the light palette automatically, and the toggle
+   * button lets anyone pick either way. The choice is remembered on
+   * this device only. */
+  function systemTheme() {
+    if (typeof window !== "undefined" && window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
+    return "dark";
+  }
+
+  function currentTheme() {
+    if (typeof document !== "undefined" && document.documentElement) {
+      var t = document.documentElement.getAttribute("data-theme");
+      if (t === "light" || t === "dark") return t;
+    }
+    return systemTheme();
+  }
+
+  function themeLabel(theme) {
+    return theme === "light" ? "Switch to dark mode" : "Switch to light mode";
+  }
+
+  function applyTheme(theme, remember) {
+    if (typeof document !== "undefined" && document.documentElement) {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+    var btn = document.getElementById("theme-toggle");
+    if (btn) btn.textContent = themeLabel(theme);
+    if (remember) {
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("manuals-theme", theme);
+        }
+      } catch (e) { /* private mode: the choice just is not remembered */ }
+    }
+  }
+
+  /* Theme toggle: label it for the theme in use, and follow the device
+   * if the user has never picked one. */
+  var themeBtn = $("theme-toggle");
+  if (themeBtn) {
+    themeBtn.textContent = themeLabel(currentTheme());
+    themeBtn.addEventListener("click", function () {
+      applyTheme(currentTheme() === "light" ? "dark" : "light", true);
+    });
+  }
+  if (typeof window !== "undefined" && window.matchMedia) {
+    var lightQuery = window.matchMedia("(prefers-color-scheme: light)");
+    if (lightQuery.addEventListener) {
+      lightQuery.addEventListener("change", function () {
+        var stored = null;
+        try {
+          if (typeof localStorage !== "undefined") {
+            stored = localStorage.getItem("manuals-theme");
+          }
+        } catch (e) { stored = null; }
+        if (stored !== "light" && stored !== "dark") {
+          applyTheme(lightQuery.matches ? "light" : "dark", false);
+        }
+      });
+    }
+  }
 
   /* ---- Load the manual list (same site, no outside service) ------------ */
   fetch("manuals.json").then(function (response) {
